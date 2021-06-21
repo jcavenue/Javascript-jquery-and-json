@@ -54,8 +54,8 @@
 	<body>
 		<div class="container  mx-5 mt-4 px-5">
 			<h1>Deleting Profile</h1>
-			<p>First Name:  <?php echo $fname; ?></p>
-			<p>Last Name: <?php echo $lname; ?></p>
+			<p>First Name:  <?php echo htmlentities($fname); ?></p>
+			<p>Last Name: <?php echo htmlentities($lname); ?></p>
 			<form method="post" class="small">
 				<input type="hidden" name="profile_id" value="<?php echo $id; ?>">
 				<input type="submit" value="Delete" name="delete">

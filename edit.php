@@ -3,29 +3,25 @@
 	require_once 'connect/pdo.php';
 
 	if( !isset($_SESSION['name']) &&  !isset($_SESSION['user_id'])) {
-   		die('ACCESS DENIED');
-	}
-
-	if (!isset($_GET['profile_id']) ) {
-		$_SESSION['error'] = "Missing Profile_id";
-		header('Location: index.php');
-		return;
+		die('ACCESS DENIED');
 	}
 
 	if(isset($_POST['cancel'])){
 		header('Location: index.php');
+		return;
 	}
 
-	if(isset($_POST['save'])){
-		if(!$_POST['first_name'] || !$_POST['last_name']|| !$_POST['email']|| !$_POST['headline']|| !$_POST['summary']){
+	if(isset($_POST['first_name']) && isset($_POST['last_name']) && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])){
+		
+		if ( strlen($_POST['first_name']) < 1 || strlen($_POST['last_name']) < 1 || strlen($_POST['email']) < 1 || strlen($_POST['headline']) < 1 || strlen($_POST['summary']) < 1) {
 			$_SESSION['error'] = 'All fields are required';
-			header('Location: add.php?profile_id='.$_GET['profile_id']);
+			header('Location: edit.php?profile_id='. $_POST['profile_id']);
 			return;
 		}
-
+		
 		if(!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)){
 			$_SESSION['error'] = 'Email address must contain @';
-			header('Location: add.php?profile_id='.$_GET['profile_id']);
+			header('Location: edit.php?profile_id='. $_POST['profile_id']);
 			return;
 		}
 
@@ -40,7 +36,13 @@
 		);
 
 		$_SESSION['success'] = 'Profile Updated';
-			header('Location: index.php');
+		header('Location: index.php');
+		return;
+	}
+
+	if (!isset($_GET['profile_id']) ) {
+		$_SESSION['error'] = "Missing Profile_id";
+		header('Location: index.php');
 		return;
 	}
 
@@ -48,15 +50,18 @@
 	$stmt->execute(array(":id" => $_GET['profile_id']));
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+	if ( $row === false ) {
+    $_SESSION['error'] = 'Bad value for profile_id';
+    header( 'Location: index.php' ) ;
+    return;
+	}
+
 	$fname = $row['first_name'];
 	$lname = $row['last_name'];
 	$email = $row['email'];
 	$headline = $row['headline'];
 	$summary = $row['summary'];
 	$id = $row['profile_id'];
-
-
-
 
 ?>
 <!DOCTYPE html>
