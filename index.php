@@ -46,8 +46,8 @@
 								<tbody>
 									<?php foreach($rows as $row){ ?>
 										<tr class="table-info">
-											<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo $row['first_name'] . " " . $row['last_name'];?></a></td>
-											<td><?php echo $row['headline'];?></td>
+											<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo htmlentities($row['first_name']) . " " . htmlentities($row['last_name']);?></a></td>
+											<td><?php echo htmlentities($row['headline']);?></td>
 										</tr>
 									<?php } ?>
 								</tbody>
@@ -77,11 +77,11 @@
 							<tbody>
 								<?php foreach($rows as $row){ ?>
 									<tr class="table-info">
-										<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo $row['first_name'] . " " . $row['last_name'];?></a></td>
+										<td><a href="view.php?profile_id=<?php echo $row['profile_id'] ;?>"><?php echo htmlentities($row['first_name'])  . " " . htmlentities($row['last_name']); ?></a></td>
 										<td><?php echo $row['headline'] ?></td>
 										<td>
-											<a href="edit.php?profile_id=<?php echo $row['profile_id']; ?>">Edit</a> 
-											<a href="delete.php?profile_id=<?php echo $row['profile_id']; ?>">Delete</a>
+											<a href="edit.php?profile_id=<?php echo htmlentities($row['profile_id']); ?>">Edit</a> 
+											<a href="delete.php?profile_id=<?php echo htmlentities($row['profile_id']); ?>">Delete</a>
 										</td>
 									</tr>
 								<?php } ?>
