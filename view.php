@@ -2,10 +2,6 @@
 	session_start();
 	require_once 'connect/pdo.php';
 
-	if( !isset($_SESSION['name']) &&  !isset($_SESSION['user_id'])) {
-		die('ACCESS DENIED');
-	}
-
 	if (!isset($_GET['profile_id']) ) {
 		$_SESSION['error'] = "Missing Profile_id";
 		header('Location: index.php');
