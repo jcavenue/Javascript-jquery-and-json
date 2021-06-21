@@ -21,7 +21,7 @@
 			<?php 
 				if(isset($_SESSION['error'])){
 					echo '<p class="text-danger">' . htmlentities($_SESSION['error']) . "</p>";
-					unset($_SESSION['success']);
+					unset($_SESSION['error']);
 				}
 				if(isset($_SESSION['success'])){
 					echo '<p class="text-success">' . htmlentities($_SESSION['success']) . "</p>";
