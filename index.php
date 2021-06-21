@@ -27,16 +27,36 @@
 					echo '<p class="text-success">' . htmlentities($_SESSION['success']) . "</p>";
 					unset($_SESSION['success']);
 				}
-				if(!isset($_SESSION['name'])){
+				if(!isset($_SESSION['name']) && !isset($_SESSION['user_id'])){
+					$stmt = $pdo->query('SELECT first_name, last_name, headline FROM Profile');
+					$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			?>
 			<!-- If Session name is not set return this -->
 			<p class="small"><a href="login.php">Please log in</a></p>
-			<?php } else {
+				<?php if($rows) { ?>
+					<table>
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Headline</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach($rows as $row){ ?>
+								<tr>
+									<td><?php echo $row['first_name'] . " " . $row['last_name'];?></td>
+									<td><?php echo $row['headline'] ?></td>
+								</tr>
+							<?php } ?>
+						</tbody>
+					</table>
+				<?php }
+			} else {
 				$stmt = $pdo->query('SELECT profile_id, first_name, last_name, headline FROM Profile');
 				$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			?>
-			<!-- If Session name is set Display this -->
-			<a href="logout.php">Logout</a>
+			<!-- If Session name is set Display this -->	
+			<p class="small"><a href="logout.php">Logout</a></p>
 				<!-- If there are rows print it -->
 				<?php if($rows) { ?>
 					<table>
