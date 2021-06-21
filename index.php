@@ -28,28 +28,33 @@
 					unset($_SESSION['success']);
 				}
 				if(!isset($_SESSION['name']) && !isset($_SESSION['user_id'])){
-					$stmt = $pdo->query('SELECT first_name, last_name, headline FROM Profile');
+					$stmt = $pdo->query('SELECT profile_id, first_name, last_name, headline FROM Profile');
 					$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			?>
 			<!-- If Session name is not set return this -->
 			<p class="small"><a href="login.php">Please log in</a></p>
 				<?php if($rows) { ?>
-					<table>
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Headline</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach($rows as $row){ ?>
-								<tr>
-									<td><?php echo $row['first_name'] . " " . $row['last_name'];?></td>
-									<td><?php echo $row['headline'] ?></td>
-								</tr>
-							<?php } ?>
-						</tbody>
-					</table>
+					<div class="row">
+						<div class="col-6">
+							<table class="table table-dark table-hover">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Headline</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php foreach($rows as $row){ ?>
+										<tr class="table-info">
+											<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo $row['first_name'] . " " . $row['last_name'];?></a></td>
+											<td><?php echo $row['headline'];?></td>
+										</tr>
+									<?php } ?>
+								</tbody>
+							</table>
+						</div>
+					</div>
+	
 				<?php }
 			} else {
 				$stmt = $pdo->query('SELECT profile_id, first_name, last_name, headline FROM Profile');
@@ -59,27 +64,31 @@
 			<p class="small"><a href="logout.php">Logout</a></p>
 				<!-- If there are rows print it -->
 				<?php if($rows) { ?>
-					<table>
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Headline</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach($rows as $row){ ?>
+					<div class="row">	
+						<div class="col-8">
+							<table class="table table-dark table-hover">
+							<thead>
 								<tr>
-									<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo $row['first_name'] . " " . $row['last_name'];?></a></td>
-									<td><?php echo $row['headline'] ?></td>
-									<td>
-										<a href="edit.php?profile_id=<?php echo $row['profile_id']; ?>">Edit</a> 
-										<a href="delete.php?profile_id=<?php echo $row['profile_id']; ?>">Delete</a>
-									</td>
+									<th>Name</th>
+									<th>Headline</th>
+									<th>Action</th>
 								</tr>
-							<?php } ?>
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								<?php foreach($rows as $row){ ?>
+									<tr class="table-info">
+										<td><a href="view.php?profile_id=<?php echo $row['profile_id'];?>"><?php echo $row['first_name'] . " " . $row['last_name'];?></a></td>
+										<td><?php echo $row['headline'] ?></td>
+										<td>
+											<a href="edit.php?profile_id=<?php echo $row['profile_id']; ?>">Edit</a> 
+											<a href="delete.php?profile_id=<?php echo $row['profile_id']; ?>">Delete</a>
+										</td>
+									</tr>
+								<?php } ?>
+							</tbody>
+						</table>
+						</div>	
+					</div>
 				<?php }	?>
 			<p class="small"><a href="add.php">Add New Entry</a></p>
 			<?php } ?>
