@@ -16,7 +16,7 @@
 
 		$salt = 'XyZzy12*_';
 		$check = hash('md5', $salt.$_POST['pass']);
-		$stmt = $pdo->prepare('SELECT user_id, name FROM users WHERE email = :em AND password = :pw');
+		$stmt = $pdo->prepare('SELECT * FROM users WHERE email = :em AND password = :pw');
 		$stmt->execute(array( ':em' => $_POST['email'], ':pw' => $check));
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -68,7 +68,7 @@
 				<input type="submit" name="Login" value="Log In" onclick="return doValidate();" class="btn btn-primary btn-sm">
 				<input type="submit" name="cancel" value="Cancel" class="btn btn-secondary btn-sm">
 			</form>
-			<script src="validate.js" type="text/javascript"></script>
+			<script src="js/validate.js" type="text/javascript"></script>
 		</div>
 		<script src="js/bootstrap.min.js"></script>
 	</body>
