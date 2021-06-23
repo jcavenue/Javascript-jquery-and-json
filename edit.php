@@ -85,6 +85,7 @@
 					unset($_SESSION['error']);
 				}
 			?>
+			
 			<form method="post" class="small">
 				<p>First Name: <input type="text" name="first_name" style="width:40%" value="<?php echo $fname; ?>"></p>
 				<p>Last Name: <input type="text" name="last_name" style="width:40%" value="<?php echo $lname; ?>"></p>
@@ -95,10 +96,13 @@
 				<p>Summary:<br>
 					<textarea name="summary" rows="8" cols="80" spellcheck="false"><?php echo $summary; ?></textarea>
 				</p>
+				<p>Position: <input type="submit" id="addPos" value="+"></p>
+				<div id="position_fields"></div>
 				<input type="hidden" name="profile_id" value="<?php echo $id; ?>">
 				<button type="submit" name="save" value="Save" class="btn btn-secondary btn-sm">Save</button>
 				<button type="submit" name="cancel" class="btn btn-secondary btn-sm">cancel</button>
 			</form>
 		</div>
+		<script src="js/addPosition.js"></script>
 	</body>
 </html>
