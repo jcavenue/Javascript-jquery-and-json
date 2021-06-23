@@ -1,3 +1,4 @@
+
 countPos = 0;
 
 // http://stackoverflow.com/questions/17650776/add-remove-html-inside-div-using-javascript

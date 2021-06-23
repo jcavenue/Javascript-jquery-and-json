@@ -2,15 +2,18 @@
 	session_start();
 	require_once 'connect/pdo.php';
 
+	// if someone try to go here without permission
 	if( !isset($_SESSION['name']) &&  !isset($_SESSION['user_id'])) {
 		die('ACCESS DENIED');
 	}
 
+	// Go to index.php
 	if(isset($_POST['cancel'])){
 		header('Location: index.php');
 		return;
 	}
 
+	// execute if true
 	if(isset($_POST['first_name']) && isset($_POST['last_name']) && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])){
 		
 		if ( strlen($_POST['first_name']) < 1 || strlen($_POST['last_name']) < 1 || strlen($_POST['email']) < 1 || strlen($_POST['headline']) < 1 || strlen($_POST['summary']) < 1) {
@@ -25,6 +28,24 @@
 			return;
 		}
 
+		for($i=1; $i<=9; $i++) {
+			if ( ! isset($_POST['year'.$i]) ) continue;
+			if ( ! isset($_POST['desc'.$i]) ) continue;
+			$year = $_POST['year'.$i];
+			$desc = $_POST['desc'.$i];
+			if ( strlen($year) == 0 || strlen($desc) == 0 ) {
+				$_SESSION['error'] = "All fields are required";
+				header('Location: edit.php?profile_id='. $_POST['profile_id']);
+				return;
+			}
+
+			if ( ! is_numeric($year) ) {
+				$_SESSION['error'] = "Position year must be numeric";
+				header('Location: edit.php?profile_id='. $_POST['profile_id']);
+				return;
+			}
+		}
+
 		$stmt = $pdo->prepare('UPDATE Profile SET first_name=:fn, last_name=:ln, email=:em, headline=:he, summary=:su WHERE profile_id=:pid');
 		$stmt->execute(array(
 			':fn' => $_POST['first_name'],
@@ -34,6 +55,32 @@
 			':su' => $_POST['summary'],
 			':pid' => $_POST['profile_id'])
 		);
+		
+
+		$stmt = $pdo->prepare('DELETE FROM Position WHERE profile_id=:pid');
+		$stmt->execute(array( ':pid' => $_REQUEST['profile_id']));
+
+		$rank = 1;
+        for ($i = 1; $i <= 9; $i++) {
+            if (!isset($_POST['year' . $i])) continue;
+            if (!isset($_POST['desc' . $i])) continue;
+
+            $year = $_POST['year' . $i];
+            $desc = $_POST['desc' . $i];
+            $stmt = $pdo->prepare('INSERT INTO Position
+    (profile_id, rank, year, description)
+    VALUES ( :pid, :rank, :year, :desc)');
+
+            $stmt->execute(array(
+                    ':pid' => $_REQUEST['profile_id'],
+                    ':rank' => $rank,
+                    ':year' => $year,
+                    ':desc' => $desc)
+            );
+
+            $rank++;
+
+        }
 
 		$_SESSION['success'] = 'Profile Updated';
 		header('Location: index.php');
@@ -49,6 +96,10 @@
 	$stmt = $pdo->prepare("SELECT * FROM Profile where profile_id = :id");
 	$stmt->execute(array(":id" => $_GET['profile_id']));
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	$stmt = $pdo->prepare("SELECT * FROM Position where profile_id = :xyz");
+	$stmt->execute(array(":xyz" => $_GET['profile_id']));
+	$rowOfPosition = $stmt->fetchAll();
 
 	if ( $row === false ) {
     $_SESSION['error'] = 'Bad value for profile_id';
@@ -75,6 +126,9 @@
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<!-- Bootstrap 5 Beta Minified JS -->
 		<script src="js/bootstrap.min.js"></script>
+		<!-- jquery -->
+		<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+	
 	</head>
 	<body>
 		<div class="container  mx-5 mt-4 px-5">
@@ -97,12 +151,47 @@
 					<textarea name="summary" rows="8" cols="80" spellcheck="false"><?php echo $summary; ?></textarea>
 				</p>
 				<p>Position: <input type="submit" id="addPos" value="+"></p>
-				<div id="position_fields"></div>
+				<div id="position_fields">
+				<?php
+					$rank = 1;
+					foreach ($rowOfPosition as $row) {
+						echo "<div id=\"position" . $rank . "\">
+							<p>Year: <input type=\"text\" name=\"year1\" value=\"".$row['year']."\">
+							<input type=\"button\" value=\"-\" onclick=\"$('#position". $rank ."').remove();return false;\"></p>
+							<textarea name=\"desc". $rank ."\"').\" rows=\"8\" cols=\"80\">".$row['description']."</textarea>
+							</div>";
+						$rank++;
+					} 
+				?>
+				</div>
 				<input type="hidden" name="profile_id" value="<?php echo $id; ?>">
 				<button type="submit" name="save" value="Save" class="btn btn-secondary btn-sm">Save</button>
 				<button type="submit" name="cancel" class="btn btn-secondary btn-sm">cancel</button>
 			</form>
 		</div>
-		<script src="js/addPosition.js"></script>
+		<script>
+			countPos = 2;
+			// http://stackoverflow.com/questions/17650776/add-remove-html-inside-div-using-javascript
+			$(document).ready(function(){
+				window.console && console.log('Document ready called');
+				$('#addPos').click(function(event){
+					// http://api.jquery.com/event.preventdefault/
+					event.preventDefault();
+					if ( countPos >= 9 ) {
+						alert("Maximum of nine position entries exceeded");
+						return;
+					}
+					countPos++;
+					window.console && console.log("Adding position "+countPos);
+					$('#position_fields').append(
+						'<div id="position'+countPos+'"> \
+						<p>Year: <input type="text" name="year'+countPos+'" value="" /> \
+						<input type="button" value="-" \
+						onclick="$(\'#position'+countPos+'\').remove();return false;"></p> \
+						<textarea name="desc'+countPos+'" rows="8" cols="80"></textarea>\
+						</div>');
+				});
+			});
+		</script>
 	</body>
 </html>

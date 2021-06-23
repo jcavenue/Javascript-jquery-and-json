@@ -11,11 +11,18 @@
 	$stmt = $pdo->prepare('SELECT * FROM Profile WHERE profile_id=:id');
 	$stmt->execute([":id" => $_GET['profile_id']]);
 	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	$stmt1 = $pdo->prepare("SELECT * FROM Position where profile_id = :xyz");
+	$stmt1->execute(array(":xyz" => $_GET['profile_id']));
+	$position = $stmt1->fetchAll(PDO::FETCH_ASSOC);
+
 	if ( $rows === false ) {
     $_SESSION['error'] = 'Bad value for profile_id';
     header( 'Location: index.php' ) ;
     return;
 	}
+
+
 
 ?>
 <!DOCTYPE html>
@@ -39,7 +46,13 @@
 			<p>Email: <?php echo $row['email'];?></p>
 			<p>Headline:<br><?php echo $row['headline'];?></p>
 			<p>Summary:<br><?php echo $row['summary'];?></p>
-			<a href="index.php">Done</a>
+				<p>Position: <br/><ul>
+			<?php
+				foreach ($position as $rowp) {
+					echo '<li>'. $rowp['year'] . ' : ' . $rowp['description'] . '</li>';
+				} ?>
+				</ul></p>
+				<a href="index.php">Done</a>
 			<?php } ?>
 		</div>
 	</body>
