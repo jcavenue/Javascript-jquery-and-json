@@ -12,6 +12,12 @@
 	$stmt->execute([":id" => $_GET['profile_id']]);
 	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+	$stmt = $pdo->prepare('SELECT year, name FROM Education JOIN Institution 
+		ON Education.institution_id = Institution.institution_id 
+		where profile_id = :prof ORDER BY rank');
+	$stmt->execute(array(":prof" => $_GET['profile_id']));
+	$education = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 	$stmt1 = $pdo->prepare("SELECT * FROM Position where profile_id = :xyz");
 	$stmt1->execute(array(":xyz" => $_GET['profile_id']));
 	$position = $stmt1->fetchAll(PDO::FETCH_ASSOC);
@@ -46,14 +52,22 @@
 			<p>Email: <?php echo $row['email'];?></p>
 			<p>Headline:<br><?php echo $row['headline'];?></p>
 			<p>Summary:<br><?php echo $row['summary'];?></p>
-				<p>Position: <br/><ul>
+			<?php } ?>
+
+			<p>Education: <br/><ul>
+			<?php
+				foreach ($education as $rowe) {
+					echo '<li>'. $rowe['year'] . ' : ' . $rowe['name'] . '</li>';
+				} ?>
+				</ul></p>
+
+			<p>Position: <br/><ul>
 			<?php
 				foreach ($position as $rowp) {
 					echo '<li>'. $rowp['year'] . ' : ' . $rowp['description'] . '</li>';
 				} ?>
 				</ul></p>
-				<a href="index.php">Done</a>
-			<?php } ?>
+			<a href="index.php">Done</a>
 		</div>
 	</body>
 </html>

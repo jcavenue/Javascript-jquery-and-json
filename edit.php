@@ -52,6 +52,24 @@
 			}
 		}
 
+		for($i=1; $i<=9; $i++) {
+			if ( ! isset($_POST['edu_year'.$i]) ) continue;
+			if ( ! isset($_POST['edu_school'.$i]) ) continue;
+			$year = $_POST['edu_year'.$i];
+			$school = $_POST['edu_school'.$i];
+			if ( strlen($year) == 0 || strlen($school) == 0 ) {
+				$_SESSION['error'] = "All fields are required";
+				header('Location: edit.php?profile_id='. $_POST['profile_id']);
+				return;
+			}
+
+			if ( ! is_numeric($year) ) {
+				$_SESSION['error'] = "Education year must be numeric";
+				header('Location: edit.php?profile_id='. $_POST['profile_id']);
+				return;
+			}
+		}
+
 		$stmt = $pdo->prepare('UPDATE Profile SET first_name=:fn, last_name=:ln, email=:em, headline=:he, summary=:su WHERE profile_id=:pid');
 		$stmt->execute(array(
 			':fn' => $_POST['first_name'],
@@ -61,7 +79,44 @@
 			':su' => $_POST['summary'],
 			':pid' => $_POST['profile_id'])
 		);
-		
+		$stmt = $pdo->prepare('DELETE FROM Education WHERE profile_id=:pid');
+		$stmt->execute(array( ':pid' => $_REQUEST['profile_id']));
+
+		$rank = 1;
+		for($i = 1; $i <= 9; $i++){
+			if ( !isset($_POST['edu_year'.$i]) ) continue;
+			if ( !isset($_POST['edu_school'.$i]) ) continue;
+			$year = $_POST['edu_year'.$i];
+			$school = $_POST['edu_school'.$i];
+
+			// Lookup the school if it is there
+			$institution_id = false;
+			$stmt = $pdo->prepare('SELECT institution_id FROM
+				Institution WHERE name = :name;');
+			$stmt->execute([':name' => $school]);
+			$row = $stmt->fetch(PDO::FETCH_ASSOC);
+			if ($row !== false ) $institution_id = $row['institution_id'];
+
+			// If there was no institution, insert it,
+
+			if($institution_id === false){
+				$stmt = $pdo->prepare('INSERT INTO Institution
+					(name) VALUES(:name)');
+				$stmt->execute([':name' => $school]);
+				$institution_id = $pdo->lastInsertId();
+			}
+
+			$stmt = $pdo->prepare('INSERT INTO Education
+            (profile_id, rank, year, institution_id) 
+			VALUES ( :pid, :rank, :year, :iid)');
+			$stmt->execute(array(
+				':pid' => $_REQUEST['profile_id'],
+				':rank' => $rank,
+				':year' => $year,
+				':iid' => $institution_id)
+			);
+			$rank++;
+		}
 
 		$stmt = $pdo->prepare('DELETE FROM Position WHERE profile_id=:pid');
 		$stmt->execute(array( ':pid' => $_REQUEST['profile_id']));
@@ -73,10 +128,7 @@
 
             $year = $_POST['year' . $i];
             $desc = $_POST['desc' . $i];
-            $stmt = $pdo->prepare('INSERT INTO Position
-    (profile_id, rank, year, description)
-    VALUES ( :pid, :rank, :year, :desc)');
-
+            $stmt = $pdo->prepare('INSERT INTO Position (profile_id, rank, year, description) VALUES ( :pid, :rank, :year, :desc)');
             $stmt->execute(array(
                     ':pid' => $_REQUEST['profile_id'],
                     ':rank' => $rank,
@@ -86,6 +138,8 @@
 
             $rank++;
         }
+
+
 
 		$_SESSION['success'] = 'Profile Updated';
 		header('Location: index.php');
@@ -99,6 +153,12 @@
 	$stmt = $pdo->prepare("SELECT * FROM Position where profile_id = :xyz");
 	$stmt->execute(array(":xyz" => $_GET['profile_id']));
 	$rowOfPosition = $stmt->fetchAll();
+
+	$stmt = $pdo->prepare('SELECT year, name FROM Education JOIN Institution 
+		ON Education.institution_id = Institution.institution_id 
+		where profile_id = :prof ORDER BY rank');
+	$stmt->execute(array(":prof" => $_GET['profile_id']));
+	$rowOfEducation = $stmt->fetchAll();
 
 	if ( $row === false ) {
     $_SESSION['error'] = 'Bad value for profile_id';
@@ -127,7 +187,7 @@
 		<script src="js/bootstrap.min.js"></script>
 		<!-- jquery -->
 		<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
-	
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30=" crossorigin="anonymous"></script>
 	</head>
 	<body>
 		<div class="container  mx-5 mt-4 px-5">
@@ -149,6 +209,22 @@
 				<p>Summary:<br>
 					<textarea name="summary" rows="8" cols="80" spellcheck="false"><?php echo $summary; ?></textarea>
 				</p>
+				<p>Education: <input type="submit" id="addEdu" value="+"></p>
+				<div id="edu_fields">
+				<?php
+					$countEdu = 1;
+					foreach($rowOfEducation as $row){
+				
+						echo "<div id=\"edu$countEdu\">";
+						echo "<p>Year: <input type=\"text\" name=\"edu_year$countEdu\" value=\"" . $row['year'] . "\">";            
+						echo "<input type=\"button\" value=\"-\" onclick=\"$('#edu$countEdu').remove();return false;\"><br>";            
+						echo "</p><p>School: <input type=\"text\" size=\"80\" name=\"edu_school$countEdu\" class=\"school ui-autocomplete-input\" value=\"" . $row['name'] . "\" autocomplete=\"off\">";            
+						echo "</p></div>";
+						$countEdu++;
+					}
+
+				?>
+				</div>
 				<p>Position: <input type="submit" id="addPos" value="+"></p>
 				<div id="position_fields">
 				<?php
@@ -169,6 +245,7 @@
 			</form>
 		</div>
 		<script>
+			countEdu = <?php echo $countEdu; ?>;
 			countPos = <?php echo $countps; ?>;
 			// http://stackoverflow.com/questions/17650776/add-remove-html-inside-div-using-javascript
 			$(document).ready(function(){
@@ -190,7 +267,32 @@
 						<textarea name="desc'+countPos+'" rows="8" cols="80"></textarea>\
 						</div>');
 				});
+
+				$('#addEdu').click(function(event){
+					event.preventDefault();
+					if ( countEdu >= 9 ) {
+						alert("Maximum of nine education entries exceeded");
+						return;
+					}
+					countEdu++;
+					window.console && console.log("Adding education "+countEdu);
+
+					$('#edu_fields').append(
+						'<div id="edu'+countEdu+'"> \
+						<p>Year: <input type="text" name="edu_year'+countEdu+'" value="" /> \
+						<input type="button" value="-" onclick="$(\'#edu'+countEdu+'\').remove();return false;"><br>\
+						<p>School: <input type="text" size="80" name="edu_school'+countEdu+'" class="school" value="" />\
+						</p></div>'
+					);
+
+					$('.school').autocomplete({
+						source: "school.php"
+					});
+				});
+				
 			});
+
+
 		</script>
 	</body>
 </html>
