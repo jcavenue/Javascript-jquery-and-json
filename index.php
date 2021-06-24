@@ -16,7 +16,7 @@
 	</head>
 	<body>
 		<div class="container  mx-5 mt-4 px-5">
-			<h1>John Carlo Fababeir's Resume Registry <?php if(isset($_SESSION['user_id'])){ echo $_SESSION['user_id']; } ?></h1>
+			<h1>John Carlo Fababeir's Resume Registry</h1>
 			<!-- Flash Message by Session -->
 			<?php 
 				if(isset($_SESSION['error'])){

@@ -13,6 +13,12 @@
 		return;
 	}
 
+	if (!isset($_GET['profile_id']) ) {
+		$_SESSION['error'] = "Missing Profile_id";
+		header('Location: index.php');
+		return;
+	}
+
 	// execute if true
 	if(isset($_POST['first_name']) && isset($_POST['last_name']) && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])){
 		
@@ -28,7 +34,7 @@
 			return;
 		}
 
-		for($i=1; $i<=9; $i++) {
+		for($i=0; $i<=9; $i++) {
 			if ( ! isset($_POST['year'.$i]) ) continue;
 			if ( ! isset($_POST['desc'.$i]) ) continue;
 			$year = $_POST['year'.$i];
@@ -61,7 +67,7 @@
 		$stmt->execute(array( ':pid' => $_REQUEST['profile_id']));
 
 		$rank = 1;
-        for ($i = 1; $i <= 9; $i++) {
+        for ($i = 0; $i <= 9; $i++) {
             if (!isset($_POST['year' . $i])) continue;
             if (!isset($_POST['desc' . $i])) continue;
 
@@ -79,16 +85,9 @@
             );
 
             $rank++;
-
         }
 
 		$_SESSION['success'] = 'Profile Updated';
-		header('Location: index.php');
-		return;
-	}
-
-	if (!isset($_GET['profile_id']) ) {
-		$_SESSION['error'] = "Missing Profile_id";
 		header('Location: index.php');
 		return;
 	}
@@ -153,14 +152,14 @@
 				<p>Position: <input type="submit" id="addPos" value="+"></p>
 				<div id="position_fields">
 				<?php
-					$rank = 1;
+					$countps = 1;
 					foreach ($rowOfPosition as $row) {
-						echo "<div id=\"position" . $rank . "\">
-							<p>Year: <input type=\"text\" name=\"year1\" value=\"".$row['year']."\">
-							<input type=\"button\" value=\"-\" onclick=\"$('#position". $rank ."').remove();return false;\"></p>
-							<textarea name=\"desc". $rank ."\"').\" rows=\"8\" cols=\"80\">".$row['description']."</textarea>
+						echo "<div id=\"position" . $countps . "\">
+							<p>Year: <input type=\"text\" name=\"year$countps\" value=\"".$row['year']."\">
+							<input type=\"button\" value=\"-\" onclick=\"$('#position". $countps ."').remove();return false;\"></p>
+							<textarea name=\"desc". $countps ."\"').\" rows=\"8\" cols=\"80\">".$row['description']."</textarea>
 							</div>";
-						$rank++;
+						$countps++;
 					} 
 				?>
 				</div>
@@ -170,7 +169,7 @@
 			</form>
 		</div>
 		<script>
-			countPos = 2;
+			countPos = <?php echo $countps; ?>;
 			// http://stackoverflow.com/questions/17650776/add-remove-html-inside-div-using-javascript
 			$(document).ready(function(){
 				window.console && console.log('Document ready called');

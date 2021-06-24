@@ -1,7 +1,6 @@
 <?php
 	session_start();
 	require_once 'connect/pdo.php';
-	require_once 'util.php';
 
 	if( !isset($_SESSION['name']) &&  !isset($_SESSION['user_id'])) {
    		die('ACCESS DENIED');
@@ -72,13 +71,8 @@
 				':year' => $year,
 				':desc' => $desc)
 			);
-			
 			$rank++;
-
 		}
-
-        
-
 		$_SESSION['success'] = 'Profile added';
 			header('Location: index.php');
 		return;
